@@ -195,3 +195,12 @@ So let's try to parse in an other way and use gnuplot:
 Well, I'm not sure it is nicer but I have lines. A first crude
 analysis seems to reveal the the parallel version is worth it for
 arrays larger than 400000.
+
+** 2021-11-18
+*** Notes
+- If working on Windows, generated data files need to be renames (: not accepted in filenames).
+- Current experimental setting is not good for representation (1e6 too far from other points), but log scale is not good as we lose point of intersection
+- We can add more data points, but why there is not an intersection anymore? It also happens if experiments are performed more times...
+- Let's increase the size, up to 1 billion! Intersection as a certain point!
+- We may plot linear regression line
+- Be careful of reading CSV, there is a space
