@@ -1,0 +1,46 @@
+---
+title: "M2RParallelSort"
+author: "Olaniyan Folajmi and Gabriele Degola"
+date: "11/22/2021"
+output:
+  html_document: default
+---
+
+```{r}
+library(ggplot2) # Data visualization
+library(readr) # CSV file I/O, e.g. the read_csv function
+library(readr)
+library(Rtsne)
+library(doParallel)
+library(benchmarkme)
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Parallel Quicksort Analysis
+In this work, we will like to compare the performance of the sequential quick sort algorithm to its sequential counterpart. 
+While the parallel version of the quicksort algorithm is slower for smaller input sizes, for sufficiently large input sizes,
+parallel quicksort outperforms the sequential version. 
+
+## Machine Specification
+### Machine CPU
+```{r}
+cat("Machine:     "); print(get_cpu()$model_name)
+```
+
+### Number of cores
+```{r}
+cat("Num cores:   "); print(detectCores(all.tests = TRUE, logical = FALSE)/2)
+```
+
+### Number of threads
+```{r}
+cat("Num threads: "); print(detectCores(logical = TRUE))
+```
+
+### Machine RAM
+```{r}
+cat("RAM:         "); print (get_ram()); cat("\n")
+```
