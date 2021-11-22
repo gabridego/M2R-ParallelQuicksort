@@ -143,7 +143,7 @@ perl scripts/csv_quicksort_extractor.pl < data/sama_2014-10-13/measurements_03\:
 #+end_src
 
 #+RESULTS:
-[[file:data/sama_2014-10-13/measurements_03:47.png]]
+[[file:data/sama_2014-10-13/measurements_03_47.png]]
 
 Well, this is not particularly nice and some may not know/like R.
 *** A simple plot with gnuplot
@@ -190,7 +190,7 @@ So let's try to parse in an other way and use gnuplot:
 #+end_src
 
 #+RESULTS:
-[[file:data/sama_2014-10-13/measurements_03:47_wide.png]]
+[[file:data/sama_2014-10-13/measurements_03_47_wide.png]]
 
 Well, I'm not sure it is nicer but I have lines. A first crude
 analysis seems to reveal the the parallel version is worth it for
@@ -201,6 +201,6 @@ arrays larger than 400000.
 - If working on Windows, generated data files need to be renames (: not accepted in filenames).
 - Current experimental setting is not good for representation (1e6 too far from other points), but log scale is not good as we lose point of intersection
 - We can add more data points, but why there is not an intersection anymore? It also happens if experiments are performed more times...
-- Let's increase the size, up to 1 billion! Intersection as a certain point!
+- Let's increase the size, for example up to 1 billion. Intersection as a certain point!
 - We may plot linear regression line
 - Be careful of reading CSV, there is a space
