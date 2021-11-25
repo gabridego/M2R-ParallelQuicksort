@@ -105,7 +105,7 @@ times in a row.
       done ;
   done
 #+end_src
-I obtained the following [[file:data/sama_2014-10-13/measurements_03:47.txt][output]].
+I obtained the following [[file:data/sama_2014-10-13/measurements_03_47.txt][output]].
 
 *** A simple plot with R
 Here is a simple script to parse the results:
@@ -198,9 +198,38 @@ arrays larger than 400000.
 
 ** 2021-11-18
 *** Notes
-- If working on Windows, generated data files need to be renames (: not accepted in filenames).
+- If working on Windows, generated data files need to be renamed (: not accepted in filenames).
 - Current experimental setting is not good for representation (1e6 too far from other points), but log scale is not good as we lose point of intersection
 - We can add more data points, but why there is not an intersection anymore? It also happens if experiments are performed more times...
 - Let's increase the size, for example up to 1 billion. Intersection as a certain point!
 - We may plot linear regression line
 - Be careful of reading CSV, there is a space
+
+Following experiments are run on an Intel(R) Core(TM) i5-8250U CPU @ 1.60GHz. Windows 11 is the main OS on the machines, parallel quicksort is compiled
+and executed on Ubuntu 20.04, running in the Windows Linux Subsystem with 4 GB of RAM.
+
+Possible contributions for the performances of the program are reported in the following fishbone diagram (Ishikawa diagram).
+[[file:data\fishbone.png]]
+
+R code for plotting can be found in [[file:plot.R][plot.R]].
+
+*** First test (5 runs per size), show confidence interval
+[[file:data\LAPTOP-126V4913_2021-11-18\measurements_14_59.png]]
+
+*** Test on more vector sizes, with 20 runs per size
+[[file:data\LAPTOP-126V4913_2021-11-18\measurements_16_02.png]]
+
+*** Linear regression
+[[file:data\LAPTOP-126V4913_2021-11-18\measurements_16_02_regr.png]]
+
+** 2021-11-24
+Benchmarking script is reimplemented in Python, with the objective of randomizing chosen vector size and reduce the effect of possible fluctuations.
+In addition, it automatically creates the CSV file in long format.
+Program is recompiled with the maximum optimization level.
+
+Benchmarking script can be run with:
+#+begin_src sh :results output :exports both 
+python3 scripts/run_benchmarking.py
+#+end_src
+
+[[file:data\LAPTOP-126V4913_2021-11-25\measurements_10_20.png]]
