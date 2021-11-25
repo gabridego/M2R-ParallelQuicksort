@@ -1,15 +1,14 @@
 ---
-title: "M2RParallelSort"
-author: "Olaniyan Folajmi and Gabriele Degola"
-date: "11/22/2021"
+title: "Analysis of Sequential vs Multi-Threaded (Parallel) QuickSort Algorithm"
+author: "Olaniyan Folajmi & Gabriele Degola"
+date: "November 22, 2021"
 output:
+  pdf_document: default
   html_document: default
 ---
 
-```{r}
-library(ggplot2) # Data visualization
-library(readr) # CSV file I/O, e.g. the read_csv function
-library(readr)
+```{r  include=FALSE}
+library(tidyverse)
 library(Rtsne)
 library(doParallel)
 library(benchmarkme)
@@ -21,11 +20,22 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Parallel Quicksort Analysis
 In this work, we will like to compare the performance of the sequential quick sort algorithm to its sequential counterpart. 
-While the parallel version of the quicksort algorithm is slower for smaller input sizes, for sufficiently large input sizes,
-parallel quicksort outperforms the sequential version. 
+While the parallel version of the quicksort algorithm is slower for smaller input sizes, for sufficiently large input sizes, parallel quicksort runs faster than the sequential version. 
+
+## Extensions to base code
+Our experiments are based on the initial code available [here](https://github.com/alegrand/M2R-ParallelQuicksort). However, we made a few modifications as follows:
+
+  1. We modified the Makefile to use level $3$ optimization when compiling the code with `gcc`. This ensures that the code is compiled to run faster.
+  2. We wrote a python version of `run_benchmarking.sh` available in `run_benchmark2.py`.
+  2. `run_benchmark2.py` is run with $3$ required arguments (`start`, `end`, `step`) and $1$ optional argument (`reps`).
+  3. We set the default number of repetitions to $20$
+  4. In order to prevent bias in our experiments, we run the algorithms on randomly selected input sizes in the range of possible values.
+  5. We include the CSV generation process in `run_benchmark2.py`.
+
+To ensure reproducibility, we provide our machine specifications below.
 
 ## Machine Specification
-### Machine CPU
+### CPU
 ```{r}
 cat("Machine:     "); print(get_cpu()$model_name)
 ```
@@ -40,7 +50,61 @@ cat("Num cores:   "); print(detectCores(all.tests = TRUE, logical = FALSE)/2)
 cat("Num threads: "); print(detectCores(logical = TRUE))
 ```
 
-### Machine RAM
+### RAM
 ```{r}
 cat("RAM:         "); print (get_ram()); cat("\n")
 ```
+
+## Data Analysis
+To get an idea of the relative performance of the sequential and parallel approaches, we run a first experiment with a `start` of size $1 \times e^5$, `end` of $1 \times e^6$ and a `step` size of $1 \times e^5$.
+
+```
+python run_benchmark2.py 1e5 1e6 1e5
+```
+
+The graph below shows the result of this experiment.
+
+```{r}
+df1 <- read.csv("data/jimiolaniyan_2021-11-25/measurements_1M.csv", sep=",")
+new_df <- df1 %>% group_by(Size, Type)
+x = labs(x = "Size of input array (number of elements)") 
+y = labs(y = "Run time in seconds")
+ggplot(new_df, aes(x=Size, y=Time, color=Type))+ geom_point() + geom_smooth(method='lm')+ x + y
+```
+The graph shows that the Sequential algorithm is faster on average than the Parallel for input sizes up to 1 million. Next we try to get the point where Parallel quicksort is faster than the sequential version. For this we run the benchmark program with a `start` of size $1 \times e^7$, `end` of $1 \times e^8$ and a `step` size of $1 \times e^7$.
+
+```{r}
+df2 <- read.csv("data/jimiolaniyan_2021-11-25/measurements_100M.csv", sep=",")
+new_df <- df2 %>% group_by(Size, Type) %>% summarise(mean=mean(Time), sd=sd(Time), n=n())
+x = labs(x = "Size of input array (number of elements)") 
+y = labs(y = "Run time in seconds")
+ggplot(new_df, aes(x=Size, y=mean, color=Type))+ geom_point() + geom_ribbon(aes(ymin=mean-sd/sqrt(n), ymax=mean+sd/sqrt(n)), alpha=0.1) + geom_line() + x + y
+#ggplot(new_df, aes(x=Size, y=mean, color=Type))+ geom_point() + geom_smooth(method='lm')+ x + y
+```
+At this point, we observe that the parallel version runs faster from around a size of $5 \times e^7$ but still remains slower than the Sequential version. Below, we analyse the range $2 \times e^7$ and $7 \times e^7$ with a step size of $0.5 \times e^6$. 
+
+```{r}
+df3 <- read.csv("data/jimiolaniyan_2021-11-25/measurements_20M_70M.csv", sep=",")
+new_df <- df3 %>% group_by(Size, Type) %>% summarise(mean=mean(Time), sd=sd(Time), n=n())
+x = labs(x = "Size of input array (number of elements)") 
+y = labs(y = "Run time in seconds")
+#ggplot(new_df, aes(x=Size, y=mean, color=Type))+ geom_point() + geom_ribbon(aes(ymin=mean-sd/sqrt(n), ymax=mean+sd/sqrt(n)), alpha=0.1) + geom_line() + x + y
+ggplot(new_df, aes(x=Size, y=mean, color=Type))+ geom_point() + geom_smooth(method='lm')+ x + y
+```
+Here we see that the Parallel quicksort becomes better than the built-in sorting method after $3 \times e^7$ input size. Now we increase the range of values to between $1 \times e^8$ and $1 \times e^9$. The graphs if provided below. 
+
+```{r}
+df4 <- read.csv("data/jimiolaniyan_2021-11-24/measurements_1B.csv", sep=",")
+new_df <- df4 %>% group_by(Size, Type) %>% summarise(mean=mean(Time), sd=sd(Time), n=n())
+x = labs(x = "Size of input array (number of elements)") 
+y = labs(y = "Run time in seconds")
+#ggplot(new_df, aes(x=Size, y=mean, color=Type))+ geom_point() + geom_ribbon(aes(ymin=mean-sd/sqrt(n), ymax=mean+sd/sqrt(n)), alpha=0.1) + geom_line() + x + y
+ggplot(new_df, aes(x=Size, y=mean, color=Type))+ geom_point() + geom_smooth(method='lm')+ x + y
+```
+Although the parallel quicksort is not faster than its sequential counterpart, it get's closer to being faster. Nevertheless, at this point, we could not run experiments with larger input sizes as we constantly exceed the memory capacity of our machine. Following the trend of the graphs, we believe that the parallel sort should become faster than the sequential version for much higher values.
+
+### Notes
+We would lie to highlight a few directions we could take in the future:
+
+ 1. We believe the results of this experiment will differ from one machine to another. In particular, some machines will benefit more from parallelism than others and it would be ideal to run the experiments on different machines.
+ 2. We need to investigate the code to make sure that it actually creates enough threads to take advantage of full parallelism. 
