@@ -232,4 +232,4 @@ Benchmarking script can be run with:
 python3 scripts/run_benchmarking.py
 #+end_src
 
-To be tested after stopping all other applications and networks...
+[[file:data\LAPTOP-126V4913_2021-11-25\measurements_10_20.png]]
