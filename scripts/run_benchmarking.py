@@ -10,7 +10,7 @@ output_file = os.path.join(output_directory, "measurements_" + datetime.now().st
 output_csv = os.path.splitext(output_file)[0] + ".csv"
 
 sizes = []
-for size in [100, 1000]:
+for size in [100, 1000, 10000, 100000, 200000, 400000, 600000, 800000, 1000000]:
 	sizes.extend([str(size)] * 20)
 random.shuffle(sizes)
 
