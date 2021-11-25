@@ -105,7 +105,7 @@ times in a row.
       done ;
   done
 #+end_src
-I obtained the following [[file:data/sama_2014-10-13/measurements_03:47.txt][output]].
+I obtained the following [[file:data/sama_2014-10-13/measurements_03_47.txt][output]].
 
 *** A simple plot with R
 Here is a simple script to parse the results:
@@ -223,6 +223,13 @@ R code for plotting can be found in [[file:plot.R][plot.R]].
 [[file:data\LAPTOP-126V4913_2021-11-18\measurements_16_02_regr.png]]
 
 ** 2021-11-24
-Update benchmarking script with Python script to randomize chosen vector size. Program is recompiled with the maximum optimization level.
+Benchmarking script is reimplemented in Python, with the objective of randomizing chosen vector size and reduce the effect of possible fluctuations.
+In addition, it automatically creates the CSV file in long format.
+Program is recompiled with the maximum optimization level.
+
+Benchmarking script can be run with:
+#+begin_src sh :results output :exports both 
+python3 scripts/run_benchmarking.py
+#+end_src
 
 To be tested after stopping all other applications and networks...
