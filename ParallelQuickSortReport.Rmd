@@ -1,17 +1,19 @@
 ---
 title: "Analysis of Sequential vs Multi-Threaded (Parallel) QuickSort Algorithm"
 author: "Olaniyan Folajmi & Gabriele Degola"
-date: "November 22, 2021"
+date: "November 2021"
 output:
-  pdf_document: default
+  pdf_document:
+    includes:
+      in_header: "utils/wrap-code.tex"
   html_document: default
 ---
 
 ```{r  include=FALSE}
 library(tidyverse)
-library(Rtsne)
-library(doParallel)
-library(benchmarkme)
+#library(Rtsne)
+#library(doParallel)
+#library(benchmarkme)
 ```
 
 ```{r setup, include=FALSE}
@@ -30,36 +32,40 @@ Our experiments are based on the initial code available [here](https://github.co
   2. `run_benchmark2.py` is run with $3$ required arguments (`start`, `end`, `step`) and $1$ optional argument (`reps`).
   3. We set the default number of repetitions to $20$
   4. In order to prevent bias in our experiments, we run the algorithms on randomly selected input sizes in the range of possible values.
-  5. We include the CSV generation process in `run_benchmark2.py`.
+  5. We include the CSV generation process in `run_benchmarking.py`.
 
 To ensure reproducibility, we provide our machine specifications below.
 
 ## Machine Specification
 ### CPU
-```{r}
-cat("Machine:     "); print(get_cpu()$model_name)
+```{r include=FALSE}
+#cat("Machine:     "); print(get_cpu()$model_name)
 ```
+AMD Ryzen 7 4800H with Radeon Graphics
 
 ### Number of cores
-```{r}
-cat("Num cores:   "); print(detectCores(all.tests = TRUE, logical = FALSE)/2)
+```{r include=FALSE}
+#cat("Num cores:   "); print(detectCores(all.tests = TRUE, logical = FALSE)/2)
 ```
+8
 
 ### Number of threads
-```{r}
-cat("Num threads: "); print(detectCores(logical = TRUE))
+```{r include=FALSE}
+#cat("Num threads: "); print(detectCores(logical = TRUE))
 ```
+16
 
 ### RAM
-```{r}
-cat("RAM:         "); print (get_ram()); cat("\n")
+```{r include=FALSE}
+#cat("RAM:         "); print (get_ram()); cat("\n")
 ```
+24.7 GB
 
 ## Data Analysis
 To get an idea of the relative performance of the sequential and parallel approaches, we run a first experiment with a `start` of size $1 \times e^5$, `end` of $1 \times e^6$ and a `step` size of $1 \times e^5$.
 
 ```
-python run_benchmark2.py 1e5 1e6 1e5
+python scripts/run_benchmarking.py 1e5 1e6 1e5
 ```
 
 The graph below shows the result of this experiment.
@@ -103,8 +109,31 @@ ggplot(new_df, aes(x=Size, y=mean, color=Type))+ geom_point() + geom_smooth(meth
 ```
 Although the parallel quicksort is not faster than its sequential counterpart, it get's closer to being faster. Nevertheless, at this point, we could not run experiments with larger input sizes as we constantly exceed the memory capacity of our machine. Following the trend of the graphs, we believe that the parallel sort should become faster than the sequential version for much higher values.
 
-### Notes
-We would lie to highlight a few directions we could take in the future:
+### Execution on a less powerful machine
 
- 1. We believe the results of this experiment will differ from one machine to another. In particular, some machines will benefit more from parallelism than others and it would be ideal to run the experiments on different machines.
- 2. We need to investigate the code to make sure that it actually creates enough threads to take advantage of full parallelism. 
+The same experiments can be performed on a different machine, in order to analyse if the detected trends are universal or machine-dependent. In particular, the CPU is an Intel(R) Core(TM) i5-8250U CPU @ 1.60GHz. Windows 11 is the main OS on the machines, but parallel quicksort is compiled and executed on Ubuntu 20.04, running in the Windows Linux Subsystem with 4 GB of RAM. These parameters and the experiment conditions are tracked in the metadata of log files. All other programs are shut down and network is disabled while running the experiments.
+
+```{r}
+df1 <- read.csv("data/LAPTOP-126V4913_2021-12-01/measurements_1M.csv", sep=",")
+new_df <- df1 %>% group_by(Size, Type)
+x = labs(x = "Size of input array (number of elements)") 
+y = labs(y = "Run time in seconds")
+ggplot(new_df, aes(x=Size, y=Time, color=Type))+ geom_point() + geom_smooth(method='lm')+ x + y
+```
+
+```{r}
+df2 <- read.csv("data/LAPTOP-126V4913_2021-12-02/measurements_100M.csv", sep=",")
+new_df <- df2 %>% group_by(Size, Type) %>% summarise(mean=mean(Time), sd=sd(Time), n=n())
+x = labs(x = "Size of input array (number of elements)") 
+y = labs(y = "Run time in seconds")
+ggplot(new_df, aes(x=Size, y=mean, color=Type))+ geom_point() + geom_ribbon(aes(ymin=mean-sd/sqrt(n), ymax=mean+sd/sqrt(n)), alpha=0.1) + geom_line() + x + y
+#ggplot(new_df, aes(x=Size, y=mean, color=Type))+ geom_point() + geom_smooth(method='lm')+ x + y
+```
+
+
+### Notes
+Metadatas are added to log files as [Extended file attributes](https://en.wikipedia.org/wiki/Extended_file_attributes) through Python's `os.setxattr()` function. It should be possible to retrieve them in R through the [`xattrs`](https://github.com/hrbrmstr/xattrs) package. Unfortunately, I am using on a Windows machine and was not able to make it work. However, they are correctly read with Python's `os.setxattr()`.
+
+We would then like to highlight a few directions we could take in the future:
+
+ 1. We need to investigate the code to make sure that it actually creates enough threads to take advantage of full parallelism. 
